@@ -9,8 +9,8 @@ import Header from '@/components/Header';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { ProgressBar } from '@/components/ProgressBar';
 import { StepperVertical } from '@/components/StepperVertical';
-import { Step1BasicInfo } from '@/components/Step1BasicInfo';
-import { Step2ProfessionalInfo } from '@/components/Step2ProfessionalInfo';
+import { Step1BasicInfo } from '@/components/cadastro/Step1BasicInfo';
+import { Step2ProfessionalInfo } from '@/components/cadastro/Step2ProfessionalInfo';
 import { Button as PrimaryButton } from '@/components/Button';
 import { colaboradoresService } from '@/lib/colaboradores';
 import { 
@@ -179,7 +179,7 @@ export default function CadColaboradorOne() {
       showSnackbar(VALIDATION_MESSAGES.SUCCESS, 'success');
 
       setTimeout(() => {
-        router.push('/');
+      router.push('/');
       }, REDIRECT_DELAY);
 
     } catch (error) {

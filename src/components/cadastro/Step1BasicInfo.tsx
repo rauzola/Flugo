@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { FormField } from './FormField';
-import { Switch as Toggle } from './Switch';
+import { FormField } from '../FormField';
+import { Switch as Toggle } from '../Switch';
 import { FormData } from '@/types/cadastro';
 
 interface Step1BasicInfoProps {

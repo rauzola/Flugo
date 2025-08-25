@@ -1,4 +1,4 @@
-import { ref, push, get } from 'firebase/database';
+import { ref, push, get, update } from 'firebase/database';
 import { db } from './firebase';
 
 export interface Colaborador {
@@ -25,6 +25,17 @@ export const colaboradoresService = {
     } catch (error) {
       console.error('Erro ao cadastrar colaborador:', error);
       throw new Error('Falha ao cadastrar colaborador');
+    }
+  },
+
+  // Atualizar colaborador existente
+  async atualizar(id: string, dadosAtualizados: Partial<Omit<Colaborador, 'id' | 'dataCriacao'>>): Promise<void> {
+    try {
+      const colaboradorRef = ref(db, `colaboradores/${id}`);
+      await update(colaboradorRef, dadosAtualizados);
+    } catch (error) {
+      console.error('Erro ao atualizar colaborador:', error);
+      throw new Error('Falha ao atualizar colaborador');
     }
   },
 

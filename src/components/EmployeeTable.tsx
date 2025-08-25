@@ -17,12 +17,22 @@ import {
   IconButton,
   Tooltip,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Drawer,
+  TextField,
+  FormControl,
+  Select,
+  MenuItem,
+  Button,
+  Divider,
+  Snackbar
 } from '@mui/material';
 import { 
   ArrowUpward as ArrowUpIcon, 
   ArrowDownward as ArrowDownIcon,
-  Sort as SortIcon
+  Sort as SortIcon,
+  Edit as EditIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
 import { colaboradoresService, Colaborador } from '@/lib/colaboradores';
 
@@ -43,6 +53,33 @@ export default function EmployeeTable() {
   // Estados de ordenação
   const [sortField, setSortField] = useState<SortField>('dataCriacao');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+
+  // Estados do Drawer de edição
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedColaborador, setSelectedColaborador] = useState<Colaborador | null>(null);
+  const [editForm, setEditForm] = useState({
+    nome: '',
+    email: '',
+    departamento: '',
+    ativo: true
+  });
+  const [editLoading, setEditLoading] = useState(false);
+
+  // Estado do Snackbar
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'info' as 'success' | 'error' | 'info' | 'warning'
+  });
+
+  const departments = [
+    'Recursos Humanos',
+    'Tecnologia da Informação',
+    'Marketing',
+    'Vendas',
+    'Financeiro',
+    'Operações'
+  ];
 
   useEffect(() => {
     const carregarColaboradores = async () => {
@@ -141,6 +178,74 @@ export default function EmployeeTable() {
       return `Ordenado por ${field} (A-Z)`;
     } else {
       return `Ordenado por ${field} (Z-A)`;
+    }
+  };
+
+  // Função para abrir o Drawer de edição
+  const handleRowClick = (colaborador: Colaborador) => {
+    setSelectedColaborador(colaborador);
+    setEditForm({
+      nome: colaborador.nome,
+      email: colaborador.email,
+      departamento: colaborador.departamento,
+      ativo: colaborador.ativo
+    });
+    setDrawerOpen(true);
+  };
+
+  // Função para fechar o Drawer
+  const handleCloseDrawer = () => {
+    setDrawerOpen(false);
+    setSelectedColaborador(null);
+    setEditForm({
+      nome: '',
+      email: '',
+      departamento: '',
+      ativo: true
+    });
+  };
+
+  // Função para salvar as alterações
+  const handleSaveEdit = async () => {
+    if (!selectedColaborador) return;
+
+    try {
+      setEditLoading(true);
+      
+      // Atualiza o colaborador no Firebase
+      await colaboradoresService.atualizar(selectedColaborador.id!, {
+        nome: editForm.nome,
+        email: editForm.email,
+        departamento: editForm.departamento,
+        ativo: editForm.ativo
+      });
+      
+      // Fecha o drawer
+      handleCloseDrawer();
+      
+      // Recarrega a lista para mostrar as alterações
+      const dados = await colaboradoresService.buscarTodos();
+      setColaboradores(dados);
+      setSortedColaboradores(dados);
+      
+      // Mostra mensagem de sucesso
+      setSnackbar({
+        open: true,
+        message: 'Colaborador atualizado com sucesso!',
+        severity: 'success'
+      });
+      
+    } catch (error) {
+      console.error('Erro ao atualizar colaborador:', error);
+      
+      // Mostra mensagem de erro
+      setSnackbar({
+        open: true,
+        message: 'Erro ao atualizar colaborador. Tente novamente.',
+        severity: 'error'
+      });
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -311,8 +416,10 @@ export default function EmployeeTable() {
                 sx={{ 
                   '&:hover': { 
                     bgcolor: 'rgba(145,158,171,0.08)' 
-                  } 
+                  },
+                  cursor: 'pointer'
                 }}
+                onClick={() => handleRowClick(colaborador)}
               >
                 <TableCell sx={{ 
                   py: isMobile ? 1.5 : 2, 
@@ -419,6 +526,140 @@ export default function EmployeeTable() {
           </Typography>
         </Box>
       )}
+
+      {/* Drawer de edição */}
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={handleCloseDrawer}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: isMobile ? '100%' : 400,
+            p: 3
+          }
+        }}
+      >
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          {/* Header do Drawer */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#212B36' }}>
+              Editar Colaborador
+            </Typography>
+            <IconButton onClick={handleCloseDrawer} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+
+          <Divider sx={{ mb: 3 }} />
+
+          {/* Formulário de edição */}
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ mb: 3 }}>
+              <TextField
+                label="Nome Completo"
+                value={editForm.nome}
+                onChange={(e) => setEditForm(prev => ({ ...prev, nome: e.target.value }))}
+                fullWidth
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                  }
+                }}
+              />
+            </Box>
+
+            <Box sx={{ mb: 3 }}>
+              <TextField
+                label="E-mail"
+                value={editForm.email}
+                onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
+                fullWidth
+                variant="outlined"
+                type="email"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: '8px',
+                  }
+                }}
+              />
+            </Box>
+
+            <Box sx={{ mb: 3 }}>
+              <FormControl fullWidth>
+                <Select
+                  value={editForm.departamento}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, departamento: e.target.value }))}
+                  displayEmpty
+                  sx={{
+                    borderRadius: '8px',
+                  }}
+                >
+                  {departments.map((department) => (
+                    <MenuItem key={department} value={department}>
+                      {department}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Box sx={{ mb: 3 }}>
+              <FormControl fullWidth>
+                <Select
+                  value={editForm.ativo ? 'ativo' : 'inativo'}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, ativo: e.target.value === 'ativo' }))}
+                  sx={{
+                    borderRadius: '8px',
+                  }}
+                >
+                  <MenuItem value="ativo">Ativo</MenuItem>
+                  <MenuItem value="inativo">Inativo</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
+
+          {/* Botões de ação */}
+          <Box sx={{ display: 'flex', gap: 2, mt: 'auto' }}>
+            <Button
+              variant="outlined"
+              onClick={handleCloseDrawer}
+              fullWidth
+              sx={{ borderRadius: '8px' }}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleSaveEdit}
+              disabled={editLoading}
+              fullWidth
+              sx={{ 
+                borderRadius: '8px',
+                backgroundColor: '#22C55E',
+                '&:hover': {
+                  backgroundColor: '#16A34A',
+                }
+              }}
+            >
+              {editLoading ? 'Salvando...' : 'Salvar'}
+            </Button>
+          </Box>
+        </Box>
+      </Drawer>
+
+      {/* Snackbar para feedback */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      >
+        <Alert onClose={() => setSnackbar(prev => ({ ...prev, open: false }))} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

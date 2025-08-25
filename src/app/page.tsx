@@ -10,17 +10,18 @@ import {
 import { Add as AddIcon } from '@mui/icons-material';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import EmployeeTable from '@/components/EmployeeTable';
 
 export default function Home() {
   const [showNewEmployeeForm, setShowNewEmployeeForm] = useState(false);
+  const router = useRouter();
 
   const handleNewEmployee = () => {
     setShowNewEmployeeForm(true);
-    // In a real app, this would open a modal or navigate to a form page
-    alert('Funcionalidade de novo colaborador seria implementada aqui!');
+    router.push('/cadcolaborador');
   };
 
   return (
@@ -60,17 +61,17 @@ export default function Home() {
             
             <Button
               variant="contained"
-              startIcon={<AddIcon />}
+              // startIcon={<AddIcon />}
               onClick={handleNewEmployee}
               sx={{
-                backgroundColor: 'primary.main',
+                backgroundColor: '#22C55E',
                 color: 'white',
                 px: 2,
                 py: 1.5,
                 fontSize: '0.9375rem',
                 fontWeight: 600,
                 '&:hover': {
-                  backgroundColor: 'primary.dark',
+                  backgroundColor: '#16A34A',
                 },
               }}
             >

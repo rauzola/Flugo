@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from 'react';
-import { Box, Container, Typography, FormControl, Select, MenuItem, FormHelperText } from '@mui/material';
+import { Box, Container, Typography, FormControl, Select, MenuItem, FormHelperText, Snackbar, Alert } from '@mui/material';
 import { KeyboardArrowDown } from '@mui/icons-material';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import { useRouter } from 'next/navigation';
@@ -13,17 +13,12 @@ import { StepperVertical } from '@/components/StepperVertical';
 import { FormField } from '@/components/FormField';
 import { Switch as Toggle } from '@/components/Switch';
 import { Button as PrimaryButton } from '@/components/Button';
+import { colaboradoresService } from '@/lib/colaboradores';
 
 type FormData = {
   title: string;
   email: string;
   activateOnCreate: boolean;
-};
-
-type Errors = {
-  title?: string;
-  email?: string;
-  department?: string;
 };
 
 export default function CadColaboradorOne() {
@@ -33,11 +28,20 @@ export default function CadColaboradorOne() {
     activateOnCreate: true,
   });
 
-  const [errors, setErrors] = useState<Errors>({});
-
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [focusedField, setFocusedField] = useState<string | null>('title');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+  
   const router = useRouter();
 
   const departments: string[] = [
@@ -59,43 +63,14 @@ export default function CadColaboradorOne() {
     { id: 2, title: 'Infos Profissionais', completed: false, active: currentStep === 2 },
   ];
 
-  const isValidEmail = (value: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
-    return emailRegex.test(value.trim());
-  };
-
-  const hasMinLetters = (value: string, min: number): boolean => {
-    const onlyLetters = value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ]/g, '');
-    return onlyLetters.length >= min;
-  };
-
-  const validateStep1 = (): boolean => {
-    const nextErrors: Errors = {};
-    if (!formData.title.trim()) {
-      nextErrors.title = 'Preencha o nome completo.';
-    } else if (!hasMinLetters(formData.title, 3)) {
-      nextErrors.title = 'Nome Completo deve ter pelo menos 3 letras.';
-    }
-
-    if (!formData.email.trim()) {
-      nextErrors.email = 'Preencha o e-mail.';
-    } else if (!isValidEmail(formData.email)) {
-      nextErrors.email = 'Informe um e-mail válido.';
-    }
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
-  };
-
-  const validateStep2 = (): boolean => {
-    const nextErrors: Errors = {};
-    if (!selectedDepartment) nextErrors.department = 'Selecione um departamento.';
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+  // Função para validar email
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
 
   const handleFieldChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    setErrors(prev => ({ ...prev, [field]: undefined }));
   };
 
   const handleSwitchChange = (checked: boolean) => {
@@ -104,16 +79,94 @@ export default function CadColaboradorOne() {
 
   const handleDepartmentChange = (event: SelectChangeEvent<string>) => {
     setSelectedDepartment(event.target.value as string);
-    setErrors(prev => ({ ...prev, department: undefined }));
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < 2) {
-      if (!validateStep1()) return;
+      // Validações para Step 1
+      if (!formData.title.trim()) {
+        setSnackbar({
+          open: true,
+          message: 'Preencha o nome completo.',
+          severity: 'error'
+        });
+        return;
+      }
+
+      if (formData.title.trim().length < 3) {
+        setSnackbar({
+          open: true,
+          message: 'O nome deve ter pelo menos 3 letras.',
+          severity: 'error'
+        });
+        return;
+      }
+
+      if (!formData.email.trim()) {
+        setSnackbar({
+          open: true,
+          message: 'Preencha o e-mail.',
+          severity: 'error'
+        });
+        return;
+      }
+
+      if (!isValidEmail(formData.email.trim())) {
+        setSnackbar({
+          open: true,
+          message: 'Digite um e-mail válido.',
+          severity: 'error'
+        });
+        return;
+      }
+
       setCurrentStep(currentStep + 1);
     } else {
-      if (!validateStep2()) return;
-      router.push('/');
+      if (!selectedDepartment) {
+        setSnackbar({
+          open: true,
+          message: 'Selecione um departamento.',
+          severity: 'error'
+        });
+        return;
+      }
+      await handleFinish();
+    }
+  };
+
+  const handleFinish = async () => {
+    try {
+      setLoading(true);
+      
+      const novoColaborador = {
+        nome: formData.title.trim(),
+        email: formData.email.trim(),
+        departamento: selectedDepartment,
+        ativo: formData.activateOnCreate,
+      };
+
+      await colaboradoresService.cadastrar(novoColaborador);
+      
+      setSnackbar({
+        open: true,
+        message: 'Colaborador cadastrado com sucesso!',
+        severity: 'success'
+      });
+
+      // Aguarda um pouco para mostrar a mensagem antes de redirecionar
+      setTimeout(() => {
+        router.push('/');
+      }, 2000);
+
+    } catch (error) {
+      console.error('Erro ao cadastrar:', error);
+      setSnackbar({
+        open: true,
+        message: 'Erro ao cadastrar colaborador. Tente novamente.',
+        severity: 'error'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -123,6 +176,10 @@ export default function CadColaboradorOne() {
       return;
     }
     setCurrentStep(currentStep - 1);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
   };
 
   // Progress: Step 1 => 0%, Step 2 => 50%
@@ -159,8 +216,6 @@ export default function CadColaboradorOne() {
                         focused={focusedField === 'title'}
                         onFocus={() => setFocusedField('title')}
                         onBlur={() => setFocusedField(null)}
-                        error={!!errors.title}
-                        helperText={errors.title}
                       />
                     </Box>
 
@@ -174,8 +229,6 @@ export default function CadColaboradorOne() {
                         focused={focusedField === 'email'}
                         onFocus={() => setFocusedField('email')}
                         onBlur={() => setFocusedField(null)}
-                        error={!!errors.email}
-                        helperText={errors.email}
                       />
                     </Box>
 
@@ -196,7 +249,7 @@ export default function CadColaboradorOne() {
                   </Typography>
 
                   <Box sx={{ width: '100%', mt: 3 }}>
-                    <FormControl fullWidth error={!!errors.department}>
+                    <FormControl fullWidth>
                       <Select
                         value={selectedDepartment}
                         onChange={handleDepartmentChange}
@@ -235,9 +288,6 @@ export default function CadColaboradorOne() {
                           </MenuItem>
                         ))}
                       </Select>
-                      {errors.department && (
-                        <FormHelperText>{errors.department}</FormHelperText>
-                      )}
                     </FormControl>
                   </Box>
                 </>
@@ -246,15 +296,34 @@ export default function CadColaboradorOne() {
           </Box>
 
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 10, maxWidth: 833 }}>
-            <PrimaryButton variant="secondary" onClick={handleBack}>
+            <PrimaryButton variant="secondary" onClick={handleBack} disabled={loading}>
               Voltar
             </PrimaryButton>
-            <PrimaryButton variant="primary" onClick={handleNext}>
-              {currentStep === 2 ? 'Concluir' : 'Próximo'}
+            <PrimaryButton 
+              variant="primary" 
+              onClick={handleNext}
+              disabled={loading}
+            >
+              {loading ? 'Salvando...' : (currentStep === 2 ? 'Concluir' : 'Próximo')}
             </PrimaryButton>
           </Box>
         </Container>
       </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

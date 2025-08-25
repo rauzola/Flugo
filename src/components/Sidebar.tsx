@@ -20,7 +20,7 @@ export default function Sidebar() {
       elevation={0}
       sx={{ 
         width: 280, 
-        height: '100vh',
+        height: 'auto',
         borderRadius: 0,
         borderRight: '1px dashed',
         borderColor: 'rgba(145, 158, 171, 0.2)',

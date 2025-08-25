@@ -63,6 +63,12 @@ export default function CadColaboradorOne() {
     { id: 2, title: 'Infos Profissionais', completed: false, active: currentStep === 2 },
   ];
 
+  // Função para validar email
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleFieldChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -77,14 +83,43 @@ export default function CadColaboradorOne() {
 
   const handleNext = async () => {
     if (currentStep < 2) {
-      if (!formData.title.trim() || !formData.email.trim()) {
+      // Validações para Step 1
+      if (!formData.title.trim()) {
         setSnackbar({
           open: true,
-          message: 'Preencha todos os campos obrigatórios.',
+          message: 'Preencha o nome completo.',
           severity: 'error'
         });
         return;
       }
+
+      if (formData.title.trim().length < 3) {
+        setSnackbar({
+          open: true,
+          message: 'O nome deve ter pelo menos 3 letras.',
+          severity: 'error'
+        });
+        return;
+      }
+
+      if (!formData.email.trim()) {
+        setSnackbar({
+          open: true,
+          message: 'Preencha o e-mail.',
+          severity: 'error'
+        });
+        return;
+      }
+
+      if (!isValidEmail(formData.email.trim())) {
+        setSnackbar({
+          open: true,
+          message: 'Digite um e-mail válido.',
+          severity: 'error'
+        });
+        return;
+      }
+
       setCurrentStep(currentStep + 1);
     } else {
       if (!selectedDepartment) {

@@ -79,7 +79,8 @@ npm install
 ### 3. Configure o Firebase
 Crie um arquivo `.env.local` na raiz do projeto:
 ```env
-NEXT_PUBLIC_FIREBASE_DATABASE_URL=database_url
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=seu_projeto_id
+NEXT_PUBLIC_FIREBASE_DATABASE_URL=https://flugo-desafio-raul-default-rtdb.firebaseio.com
 ```
 
 ### 4. Configure as Regras do Firebase

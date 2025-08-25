@@ -1,8 +1,7 @@
 "use client"
 
-import React, { useState } from 'react';
-import { Box, Container, Typography, FormControl, Select, MenuItem, FormHelperText, Snackbar, Alert } from '@mui/material';
-import { KeyboardArrowDown } from '@mui/icons-material';
+import React, { useState, useCallback, useMemo } from 'react';
+import { Box, Container, Snackbar, Alert } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material/Select';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
@@ -10,131 +9,161 @@ import Header from '@/components/Header';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { ProgressBar } from '@/components/ProgressBar';
 import { StepperVertical } from '@/components/StepperVertical';
-import { FormField } from '@/components/FormField';
-import { Switch as Toggle } from '@/components/Switch';
+import { Step1BasicInfo } from '@/components/Step1BasicInfo';
+import { Step2ProfessionalInfo } from '@/components/Step2ProfessionalInfo';
 import { Button as PrimaryButton } from '@/components/Button';
 import { colaboradoresService } from '@/lib/colaboradores';
+import { 
+  FormData, 
+  SnackbarState, 
+  Step, 
+  BreadcrumbItem, 
+  VALIDATION_MESSAGES, 
+  PROGRESS_STEP_2, 
+  REDIRECT_DELAY 
+} from '@/types/cadastro';
 
-type FormData = {
-  title: string;
-  email: string;
-  activateOnCreate: boolean;
+// Hooks customizados
+const useSnackbar = () => {
+  const [snackbar, setSnackbar] = useState<SnackbarState>({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+
+  const showSnackbar = useCallback((message: string, severity: 'success' | 'error') => {
+    setSnackbar({ open: true, message, severity });
+  }, []);
+
+  const hideSnackbar = useCallback(() => {
+    setSnackbar(prev => ({ ...prev, open: false }));
+  }, []);
+
+  return { snackbar, showSnackbar, hideSnackbar };
 };
 
+const useFormValidation = () => {
+  const isValidEmail = useCallback((email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }, []);
+
+  const validateName = useCallback((name: string): string | null => {
+    if (!name.trim()) return VALIDATION_MESSAGES.NAME_REQUIRED;
+    if (name.trim().length < 3) return VALIDATION_MESSAGES.NAME_MIN_LENGTH;
+    return null;
+  }, []);
+
+  const validateEmail = useCallback((email: string): string | null => {
+    if (!email.trim()) return VALIDATION_MESSAGES.EMAIL_REQUIRED;
+    if (!isValidEmail(email.trim())) return VALIDATION_MESSAGES.EMAIL_INVALID;
+    return null;
+  }, [isValidEmail]);
+
+  const validateDepartment = useCallback((department: string): string | null => {
+    if (!department) return VALIDATION_MESSAGES.DEPARTMENT_REQUIRED;
+    return null;
+  }, []);
+
+  return { validateName, validateEmail, validateDepartment };
+};
+
+// Componente principal
 export default function CadColaboradorOne() {
+  // Estados
   const [formData, setFormData] = useState<FormData>({
     title: '',
     email: '',
     activateOnCreate: true,
   });
-
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [focusedField, setFocusedField] = useState<string | null>('title');
   const [selectedDepartment, setSelectedDepartment] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: 'success' | 'error';
-  }>({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
+
+  // Hooks customizados
+  const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
+  const { validateName, validateEmail, validateDepartment } = useFormValidation();
   
+  // Hooks do Next.js
   const router = useRouter();
 
-  const departments: string[] = [
-    'Recursos Humanos',
-    'Tecnologia da Informação',
-    'Marketing',
-    'Vendas',
-    'Financeiro',
-    'Operações'
-  ];
-
-  const breadcrumbItems = [
+  // Memoização de valores computados
+  const breadcrumbItems: BreadcrumbItem[] = useMemo(() => [
     { label: 'Colaboradores' },
     { label: 'Cadastrar Colaborador', active: true },
-  ];
+  ], []);
 
-  const steps = [
-    { id: 1, title: 'Infos Básicas', completed: currentStep > 1, active: currentStep === 1 },
-    { id: 2, title: 'Infos Profissionais', completed: false, active: currentStep === 2 },
-  ];
+  const steps: Step[] = useMemo(() => [
+    { 
+      id: 1, 
+      title: 'Infos Básicas', 
+      completed: currentStep > 1, 
+      active: currentStep === 1 
+    },
+    { 
+      id: 2, 
+      title: 'Infos Profissionais', 
+      completed: false, 
+      active: currentStep === 2 
+    },
+  ], [currentStep]);
 
-  // Função para validar email
-  const isValidEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  const progress = useMemo(() => 
+    (currentStep - 1) * PROGRESS_STEP_2, [currentStep]
+  );
 
-  const handleFieldChange = (field: keyof FormData, value: string) => {
+  // Handlers
+  const handleFieldChange = useCallback((field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  }, []);
 
-  const handleSwitchChange = (checked: boolean) => {
+  const handleSwitchChange = useCallback((checked: boolean) => {
     setFormData(prev => ({ ...prev, activateOnCreate: checked }));
-  };
+  }, []);
 
-  const handleDepartmentChange = (event: SelectChangeEvent<string>) => {
+  const handleDepartmentChange = useCallback((event: SelectChangeEvent<string>) => {
     setSelectedDepartment(event.target.value as string);
-  };
+  }, []);
 
-  const handleNext = async () => {
-    if (currentStep < 2) {
-      // Validações para Step 1
-      if (!formData.title.trim()) {
-        setSnackbar({
-          open: true,
-          message: 'Preencha o nome completo.',
-          severity: 'error'
-        });
-        return;
-      }
-
-      if (formData.title.trim().length < 3) {
-        setSnackbar({
-          open: true,
-          message: 'O nome deve ter pelo menos 3 letras.',
-          severity: 'error'
-        });
-        return;
-      }
-
-      if (!formData.email.trim()) {
-        setSnackbar({
-          open: true,
-          message: 'Preencha o e-mail.',
-          severity: 'error'
-        });
-        return;
-      }
-
-      if (!isValidEmail(formData.email.trim())) {
-        setSnackbar({
-          open: true,
-          message: 'Digite um e-mail válido.',
-          severity: 'error'
-        });
-        return;
-      }
-
-      setCurrentStep(currentStep + 1);
-    } else {
-      if (!selectedDepartment) {
-        setSnackbar({
-          open: true,
-          message: 'Selecione um departamento.',
-          severity: 'error'
-        });
-        return;
-      }
-      await handleFinish();
+  const validateStep1 = useCallback((): boolean => {
+    const nameError = validateName(formData.title);
+    if (nameError) {
+      showSnackbar(nameError, 'error');
+      return false;
     }
-  };
 
-  const handleFinish = async () => {
+    const emailError = validateEmail(formData.email);
+    if (emailError) {
+      showSnackbar(emailError, 'error');
+      return false;
+    }
+
+    return true;
+  }, [formData.title, formData.email, validateName, validateEmail, showSnackbar]);
+
+  const validateStep2 = useCallback((): boolean => {
+    const departmentError = validateDepartment(selectedDepartment);
+    if (departmentError) {
+      showSnackbar(departmentError, 'error');
+      return false;
+    }
+    return true;
+  }, [selectedDepartment, validateDepartment, showSnackbar]);
+
+  const handleNext = useCallback(async () => {
+    if (currentStep < 2) {
+      if (validateStep1()) {
+        setCurrentStep(currentStep + 1);
+      }
+    } else {
+      if (validateStep2()) {
+        await handleFinish();
+      }
+    }
+  }, [currentStep, validateStep1, validateStep2]);
+
+  const handleFinish = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -147,43 +176,35 @@ export default function CadColaboradorOne() {
 
       await colaboradoresService.cadastrar(novoColaborador);
       
-      setSnackbar({
-        open: true,
-        message: 'Colaborador cadastrado com sucesso!',
-        severity: 'success'
-      });
+      showSnackbar(VALIDATION_MESSAGES.SUCCESS, 'success');
 
-      // Aguarda um pouco para mostrar a mensagem antes de redirecionar
       setTimeout(() => {
         router.push('/');
-      }, 2000);
+      }, REDIRECT_DELAY);
 
     } catch (error) {
       console.error('Erro ao cadastrar:', error);
-      setSnackbar({
-        open: true,
-        message: 'Erro ao cadastrar colaborador. Tente novamente.',
-        severity: 'error'
-      });
+      showSnackbar(VALIDATION_MESSAGES.ERROR, 'error');
     } finally {
       setLoading(false);
     }
-  };
+  }, [formData, selectedDepartment, showSnackbar, router]);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (currentStep === 1) {
       router.push('/');
       return;
     }
     setCurrentStep(currentStep - 1);
-  };
+  }, [currentStep, router]);
 
-  const handleCloseSnackbar = () => {
-    setSnackbar(prev => ({ ...prev, open: false }));
-  };
+  const handleFieldFocus = useCallback((field: string) => {
+    setFocusedField(field);
+  }, []);
 
-  // Progress: Step 1 => 0%, Step 2 => 50%
-  const progress = (currentStep - 1) * 50;
+  const handleFieldBlur = useCallback(() => {
+    setFocusedField(null);
+  }, []);
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', width: '100vw', overflow: 'hidden' }}>
@@ -202,95 +223,21 @@ export default function CadColaboradorOne() {
 
             <Box sx={{ flex: 1, minWidth: 320 }}>
               {currentStep === 1 && (
-                <>
-                  <Typography sx={{ color: '#637381', fontSize: 20, fontWeight: 700 }}>
-                    Informações Básicas
-                  </Typography>
-
-                  <Box component="form" sx={{ mt: 3 }}>
-                    <Box sx={{ mb: 3 }}>
-                      <FormField
-                        label="Nome Completo"
-                        value={formData.title}
-                        onChange={(value) => handleFieldChange('title', value)}
-                        focused={focusedField === 'title'}
-                        onFocus={() => setFocusedField('title')}
-                        onBlur={() => setFocusedField(null)}
-                      />
-                    </Box>
-
-                    <Box sx={{ mb: 3 }}>
-                      <FormField
-                        label="E-mail"
-                        value={formData.email}
-                        onChange={(value) => handleFieldChange('email', value)}
-                        placeholder="e.g. john@gmail.com"
-                        type="email"
-                        focused={focusedField === 'email'}
-                        onFocus={() => setFocusedField('email')}
-                        onBlur={() => setFocusedField(null)}
-                      />
-                    </Box>
-
-                    <Toggle
-                      checked={formData.activateOnCreate}
-                      onChange={handleSwitchChange}
-                      label="Ativar ao criar"
-                      className="mt-6"
-                    />
-                  </Box>
-                </>
+                <Step1BasicInfo
+                  formData={formData}
+                  focusedField={focusedField}
+                  onFieldChange={handleFieldChange}
+                  onSwitchChange={handleSwitchChange}
+                  onFieldFocus={handleFieldFocus}
+                  onFieldBlur={handleFieldBlur}
+                />
               )}
 
               {currentStep === 2 && (
-                <>
-                  <Typography sx={{ color: '#637381', fontSize: 20, fontWeight: 700 }}>
-                    Informações Profissionais
-                  </Typography>
-
-                  <Box sx={{ width: '100%', mt: 3 }}>
-                    <FormControl fullWidth>
-                      <Select
-                        value={selectedDepartment}
-                        onChange={handleDepartmentChange}
-                        displayEmpty
-                        IconComponent={KeyboardArrowDown}
-                        sx={{
-                          minHeight: 54,
-                          '& .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'rgba(145,158,171,0.20)',
-                            borderRadius: 2,
-                          },
-                          '& .MuiSelect-select': {
-                            color: selectedDepartment ? '#212B36' : '#919EAB',
-                            fontSize: 14,
-                            fontWeight: 400,
-                            py: 2,
-                            px: 1.75,
-                          },
-                        }}
-                      >
-                        <MenuItem value="" disabled sx={{ color: '#919EAB' }}>
-                          Selecione um departamento
-                        </MenuItem>
-                        {departments.map((department) => (
-                          <MenuItem
-                            key={department}
-                            value={department}
-                            sx={{
-                              fontSize: 14,
-                              '&:hover': {
-                                bgcolor: 'rgba(0, 0, 0, 0.04)',
-                              },
-                            }}
-                          >
-                            {department}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Box>
-                </>
+                <Step2ProfessionalInfo
+                  selectedDepartment={selectedDepartment}
+                  onDepartmentChange={handleDepartmentChange}
+                />
               )}
             </Box>
           </Box>
@@ -313,11 +260,11 @@ export default function CadColaboradorOne() {
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
+        onClose={hideSnackbar}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
         <Alert 
-          onClose={handleCloseSnackbar} 
+          onClose={hideSnackbar} 
           severity={snackbar.severity}
           sx={{ width: '100%' }}
         >

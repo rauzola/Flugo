@@ -1,23 +1,23 @@
-import type { Metadata } from "next";
-import ThemeWrapper from "../components/ThemeWrapper";
-import "./globals.css";
+import type { Metadata } from 'next'
+import './globals.css'
+import ThemeWrapper from '@/components/ThemeWrapper'
 
 export const metadata: Metadata = {
-  title: "Flugo - Sistema de Gestão",
-  description: "Sistema de gestão de colaboradores da Flugo",
-};
+  title: 'Flugo',
+  description: 'Sistema de gestão de colaboradores',
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="pt-BR">
       <head>
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
         />
       </head>
       <body>
@@ -26,5 +26,5 @@ export default function RootLayout({
         </ThemeWrapper>
       </body>
     </html>
-  );
+  )
 }

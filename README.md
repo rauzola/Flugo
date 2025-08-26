@@ -27,6 +27,7 @@
 - **Ordenação**: Por nome, e-mail, departamento, status e data de criação
 - **Edição**: Drawer lateral para editar dados existentes
 - **Status**: Indicadores visuais para colaboradores ativos/inativos
+- **Soft Delete**: Colaboradores são marcados como inativos, nunca excluídos da base
 
 ### 🎨 Interface Moderna
 - **Design Responsivo**: Adaptável a desktop, tablet e mobile
@@ -134,6 +135,20 @@ Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
 
 ## 🏗️ Arquitetura do Projeto
 
+### 🎯 Decisões de Design Importantes
+
+#### **Soft Delete vs Hard Delete**
+- **Colaboradores nunca são excluídos**: Implementamos um sistema de "soft delete" onde colaboradores são marcados como inativos
+- **Preservação histórica**: Dados de ex-colaboradores são mantidos para auditoria, relatórios e conformidade legal
+- **Conformidade empresarial**: Empresas precisam manter registros de funcionários por questões fiscais e trabalhistas
+- **Rastreabilidade**: Histórico completo de colaboradores que passaram pela empresa
+
+#### **Sem Upload de Avatar**
+- **Custo do Firebase Storage**: O Google Firebase cobra R$ 200 para criar um bucket no Storage
+- **Alternativa econômica**: Uso de avatares padrão ou iniciais do nome para identificação visual
+- **Foco no MVP**: Priorizamos funcionalidades core sobre recursos visuais opcionais
+- **Escalabilidade**: Evitamos custos adicionais desnecessários para o projeto
+
 ### 📁 Estrutura de Diretórios
 ```
 src/
@@ -205,8 +220,9 @@ src/
 ### 📊 Realtime Database
 - **Estrutura**: `/colaboradores/{id}`
 - **Campos**: nome, email, departamento, ativo, dataCriacao
-- **Operações**: CREATE, READ, UPDATE
+- **Operações**: CREATE, READ, UPDATE (sem DELETE)
 - **Ordenação**: Local por data de criação
+- **Soft Delete**: Campo `ativo` controla visibilidade, dados permanecem na base
 
 ### 🔐 Segurança
 - **Regras**: Leitura e escrita públicas para desenvolvimento
@@ -242,6 +258,20 @@ src/
 
 ## 📈 Melhorias Futuras
 
+### 💡 Limitações Atuais e Justificativas
+
+#### **Funcionalidade de Exclusão**
+- **Soft Delete Implementado**: Colaboradores são marcados como inativos, nunca removidos da base
+- **Motivo**: Conformidade legal e empresarial - empresas precisam manter histórico de funcionários
+- **Benefícios**: Auditoria, relatórios fiscais, rastreabilidade completa
+- **Alternativa**: Campo `ativo` controla visibilidade na interface
+
+#### **Avatar/Imagem de Perfil**
+- **Não Implementado**: Sistema usa iniciais ou avatares padrão
+- **Motivo**: Firebase Storage cobra R$ 200 para criar bucket
+- **Impacto**: Funcionalidade visual opcional não afeta operação core do sistema
+- **Plano**: Implementar quando custos permitirem ou usar alternativas gratuitas
+
 ### 🚀 Funcionalidades Planejadas
 - [ ] **Autenticação**: Login/logout de usuários
 - [ ] **Filtros Avançados**: Busca por texto, filtros múltiplos
@@ -249,6 +279,8 @@ src/
 - [ ] **Dashboard**: Gráficos e estatísticas
 - [ ] **Notificações**: Sistema de alertas em tempo real
 - [ ] **Histórico**: Log de alterações nos colaboradores
+- [ ] **Upload de Avatar**: Implementar quando Firebase Storage estiver disponível
+- [ ] **Hard Delete**: Opção para administradores (com backup automático)
 
 ### 🎨 Melhorias de UX
 - [ ] **Drag & Drop**: Reordenação de colaboradores

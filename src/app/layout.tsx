@@ -3,7 +3,7 @@ import './globals.css'
 import ThemeWrapper from '@/components/ThemeWrapper'
 
 export const metadata: Metadata = {
-  title: 'Flugo',
+  title: 'Flugo - Sistema de gestão de colaboradores',
   description: 'Sistema de gestão de colaboradores',
 }
 

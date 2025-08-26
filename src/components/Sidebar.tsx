@@ -29,7 +29,7 @@ export default function Sidebar() {
     >
       <Box sx={{ pt: 3, pb: 1, px: 2 }}>
         <Avatar
-          src="https://api.builder.io/api/v1/image/assets/TEMP/8af4762a9c2fa437e496d3427cf56d000b68d21d?placeholderIfAbsent=true"
+          src="/logo.png"
           alt="Company Logo"
           variant="square"
           sx={{ 

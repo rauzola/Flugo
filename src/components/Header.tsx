@@ -19,7 +19,7 @@ export default function Header() {
       <Toolbar sx={{ height: '100%', justifyContent: 'flex-end', px: 5 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Avatar
-            src="https://api.builder.io/api/v1/image/assets/TEMP/981e84f6bd2bb9fe7de87bdff69ad6abde7c5ef4?placeholderIfAbsent=true"
+            src="/HeaderAvatar.png"
             alt="User avatar"
             sx={{ 
               width: 40, 

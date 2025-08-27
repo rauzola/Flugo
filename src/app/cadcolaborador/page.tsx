@@ -151,18 +151,6 @@ export default function CadColaboradorOne() {
     return true;
   }, [selectedDepartment, validateDepartment, showSnackbar]);
 
-  const handleNext = useCallback(async () => {
-    if (currentStep < 2) {
-      if (validateStep1()) {
-        setCurrentStep(currentStep + 1);
-      }
-    } else {
-      if (validateStep2()) {
-        await handleFinish();
-      }
-    }
-  }, [currentStep, validateStep1, validateStep2]);
-
   const handleFinish = useCallback(async () => {
     try {
       setLoading(true);
@@ -190,6 +178,18 @@ export default function CadColaboradorOne() {
     }
   }, [formData, selectedDepartment, showSnackbar, router]);
 
+  const handleNext = useCallback(async () => {
+    if (currentStep < 2) {
+      if (validateStep1()) {
+        setCurrentStep(currentStep + 1);
+      }
+    } else {
+      if (validateStep2()) {
+        await handleFinish();
+      }
+    }
+  }, [currentStep, validateStep1, validateStep2, handleFinish]);
+
   const handleBack = useCallback(() => {
     if (currentStep === 1) {
       router.push('/');
@@ -207,21 +207,23 @@ export default function CadColaboradorOne() {
   }, []);
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', width: '100vw', overflow: 'hidden' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%', overflow: 'hidden', flexDirection: { xs: 'column', sm: 'row' } }}>
       <Sidebar />
 
-      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
         <Header />
 
-        <Container maxWidth={false} sx={{ py: 4, flexGrow: 1, px: 4 }}>
+        <Container maxWidth={false} sx={{ py: { xs: 2, sm: 3, md: 4 }, flexGrow: 1, px: { xs: 1.5, sm: 2, md: 4 }, minWidth: 0, overflow: 'hidden' }}>
           <Breadcrumb items={breadcrumbItems} />
 
           <ProgressBar progress={progress} className="mt-6" />
 
-          <Box sx={{ display: 'flex', gap: 4, mt: 5, flexWrap: 'wrap' }}>
-            <StepperVertical steps={steps} />
+          <Box sx={{ display: 'flex', gap: { xs: 2, sm: 3, md: 4 }, mt: { xs: 3, sm: 4, md: 5 }, flexDirection: { xs: 'column', md: 'row' }, alignItems: { xs: 'stretch', md: 'flex-start' } }}>
+            <Box sx={{ minWidth: { md: 260 }, width: { xs: '100%', md: 'auto' } }}>
+              <StepperVertical steps={steps} />
+            </Box>
 
-            <Box sx={{ flex: 1, minWidth: 320 }}>
+            <Box sx={{ flex: 1, minWidth: { xs: 0, sm: 320 } }}>
               {currentStep === 1 && (
                 <Step1BasicInfo
                   formData={formData}
@@ -242,7 +244,7 @@ export default function CadColaboradorOne() {
             </Box>
           </Box>
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 10, maxWidth: 833 }}>
+          <Box sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'space-between' }, alignItems: 'center', mt: { xs: 6, sm: 8, md: 10 }, maxWidth: 833, gap: { xs: 2, sm: 0 }, flexWrap: { xs: 'wrap', sm: 'nowrap' } }}>
             <PrimaryButton variant="secondary" onClick={handleBack} disabled={loading}>
               Voltar
             </PrimaryButton>

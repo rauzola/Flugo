@@ -282,251 +282,277 @@ export default function EmployeeTable() {
 
   return (
     <Box sx={{ width: '100%', overflow: 'hidden' }}>
-      <TableContainer 
-        component={Paper} 
-        sx={{ 
-          boxShadow: 'none', 
-          border: '1px solid rgba(145,158,171,0.20)', 
-          borderRadius: 2,
-          maxWidth: '100%',
-          overflowX: 'auto'
-        }}
-      >
-        <Table sx={{ minWidth: isMobile ? 600 : 800 }}>
-          <TableHead>
-            <TableRow sx={{ bgcolor: '#F4F6F8' }}>
-              <TableCell sx={{ 
-                py: isMobile ? 1.5 : 2, 
-                px: isMobile ? 1.5 : 3, 
-                borderBottom: '1px solid rgba(145,158,171,0.20)',
-                minWidth: isMobile ? 120 : 150
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.5 : 1 }}>
-                  <Typography variant={isMobile ? "caption" : "body2"} sx={{ 
-                    fontWeight: 600, 
-                    color: '#637381',
-                    fontSize: isMobile ? '0.75rem' : '0.875rem'
-                  }}>
-                    Nome
-                  </Typography>
-                  <Tooltip title={getSortTooltip('nome')}>
-                    <IconButton 
-                      size="small" 
-                      onClick={() => handleSort('nome')}
-                      sx={{ 
-                        p: isMobile ? 0.25 : 0.5,
-                        '&:hover': { bgcolor: 'rgba(145,158,171,0.08)' }
-                      }}
-                    >
-                      {getSortIcon('nome')}
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </TableCell>
-              <TableCell sx={{ 
-                py: isMobile ? 1.5 : 2, 
-                px: isMobile ? 1.5 : 3, 
-                borderBottom: '1px solid rgba(145,158,171,0.20)',
-                minWidth: isMobile ? 140 : 180
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.5 : 1 }}>
-                  <Typography variant={isMobile ? "caption" : "body2"} sx={{ 
-                    fontWeight: 600, 
-                    color: '#637381',
-                    fontSize: isMobile ? '0.75rem' : '0.875rem'
-                  }}>
-                    Email
-                  </Typography>
-                  <Tooltip title={getSortTooltip('email')}>
-                    <IconButton 
-                      size="small" 
-                      onClick={() => handleSort('email')}
-                      sx={{ 
-                        p: isMobile ? 0.25 : 0.5,
-                        '&:hover': { bgcolor: 'rgba(145,158,171,0.08)' }
-                      }}
-                    >
-                      {getSortIcon('email')}
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </TableCell>
-              <TableCell sx={{ 
-                py: isMobile ? 1.5 : 2, 
-                px: isMobile ? 1.5 : 3, 
-                borderBottom: '1px solid rgba(145,158,171,0.20)',
-                minWidth: isMobile ? 120 : 150
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.5 : 1 }}>
-                  <Typography variant={isMobile ? "caption" : "body2"} sx={{ 
-                    fontWeight: 600, 
-                    color: '#637381',
-                    fontSize: isMobile ? '0.75rem' : '0.875rem'
-                  }}>
-                    Departamento
-                  </Typography>
-                  <Tooltip title={getSortTooltip('departamento')}>
-                    <IconButton 
-                      size="small" 
-                      onClick={() => handleSort('departamento')}
-                      sx={{ 
-                        p: isMobile ? 0.25 : 0.5,
-                        '&:hover': { bgcolor: 'rgba(145,158,171,0.08)' }
-                      }}
-                    >
-                      {getSortIcon('departamento')}
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </TableCell>
-              <TableCell sx={{ 
-                py: isMobile ? 1.5 : 2, 
-                px: isMobile ? 1.5 : 3, 
-                borderBottom: '1px solid rgba(145,158,171,0.20)',
-                minWidth: isMobile ? 80 : 100
-              }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.5 : 1 }}>
-                  <Typography variant={isMobile ? "caption" : "body2"} sx={{ 
-                    fontWeight: 600, 
-                    color: '#637381',
-                    fontSize: isMobile ? '0.75rem' : '0.875rem'
-                  }}>
-                    Status
-                  </Typography>
-                  <Tooltip title={getSortTooltip('status')}>
-                    <IconButton 
-                      size="small" 
-                      onClick={() => handleSort('status')}
-                      sx={{ 
-                        p: isMobile ? 0.25 : 0.5,
-                        '&:hover': { bgcolor: 'rgba(145,158,171,0.08)' }
-                      }}
-                    >
-                      {getSortIcon('status')}
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {sortedColaboradores.map((colaborador) => (
-              <TableRow 
-                key={colaborador.id} 
-                sx={{ 
-                  '&:hover': { 
-                    bgcolor: 'rgba(145,158,171,0.08)' 
-                  },
-                  cursor: 'pointer'
-                }}
-                onClick={() => handleRowClick(colaborador)}
-              >
+      {/* Container com scroll horizontal para mobile */}
+      <Box sx={{ 
+        overflowX: 'auto',
+        overflowY: 'hidden',
+        WebkitOverflowScrolling: 'touch', // Melhora scroll no iOS
+        '&::-webkit-scrollbar': {
+          height: isMobile ? 8 : 10,
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: '#f1f1f1',
+          borderRadius: 4,
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: '#c1c1c1',
+          borderRadius: 4,
+          '&:hover': {
+            backgroundColor: '#a8a8a8',
+          },
+        },
+        border: '1px solid rgba(145,158,171,0.20)',
+        borderRadius: 2,
+        backgroundColor: 'white'
+      }}>
+        <TableContainer 
+          component={Paper} 
+          sx={{ 
+            boxShadow: 'none', 
+            border: 'none',
+            borderRadius: 0,
+            minWidth: isMobile ? 600 : 800, // Largura mínima reduzida para mobile
+            width: '100%'
+          }}
+        >
+          <Table sx={{ 
+            minWidth: isMobile ? 600 : 800,
+            tableLayout: 'auto' // Mudança para 'auto' para melhor distribuição
+          }}>
+            <TableHead>
+              <TableRow sx={{ bgcolor: '#F4F6F8' }}>
                 <TableCell sx={{ 
                   py: isMobile ? 1.5 : 2, 
                   px: isMobile ? 1.5 : 3, 
-                  borderBottom: '1px solid rgba(145,158,171,0.20)'
+                  borderBottom: '1px solid rgba(145,158,171,0.20)',
+                  minWidth: isMobile ? 120 : 150,
+                  width: isMobile ? 'auto' : 'auto'
                 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 1 : 2 }}>
-                    <Avatar 
-                      sx={{ 
-                        width: isMobile ? 32 : 40, 
-                        height: isMobile ? 32 : 40, 
-                        bgcolor: '#00AB55',
-                        fontSize: isMobile ? '0.75rem' : '1rem',
-                        fontWeight: 600
-                      }}
-                    >
-                      {colaborador.nome.charAt(0).toUpperCase()}
-                    </Avatar>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.5 : 1 }}>
                     <Typography variant={isMobile ? "caption" : "body2"} sx={{ 
                       fontWeight: 600, 
-                      color: '#212B36',
-                      fontSize: isMobile ? '0.75rem' : '0.875rem',
-                      wordBreak: 'break-word'
+                      color: '#637381',
+                      fontSize: isMobile ? '0.75rem' : '0.875rem'
                     }}>
-                      {colaborador.nome}
+                      Nome
                     </Typography>
+                    <Tooltip title={getSortTooltip('nome')}>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleSort('nome')}
+                        sx={{ 
+                          p: isMobile ? 0.25 : 0.5,
+                          '&:hover': { bgcolor: 'rgba(145,158,171,0.08)' }
+                        }}
+                      >
+                        {getSortIcon('nome')}
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                 </TableCell>
                 <TableCell sx={{ 
                   py: isMobile ? 1.5 : 2, 
                   px: isMobile ? 1.5 : 3, 
-                  borderBottom: '1px solid rgba(145,158,171,0.20)'
+                  borderBottom: '1px solid rgba(145,158,171,0.20)',
+                  minWidth: isMobile ? 140 : 180,
+                  width: isMobile ? 'auto' : 'auto'
                 }}>
-                  <Typography variant={isMobile ? "caption" : "body2"} sx={{ 
-                    color: '#637381',
-                    fontSize: isMobile ? '0.75rem' : '0.875rem',
-                    wordBreak: 'break-all'
-                  }}>
-                    {colaborador.email}
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.5 : 1 }}>
+                    <Typography variant={isMobile ? "caption" : "body2"} sx={{ 
+                      fontWeight: 600, 
+                      color: '#637381',
+                      fontSize: isMobile ? '0.75rem' : '0.875rem'
+                    }}>
+                      Email
+                    </Typography>
+                    <Tooltip title={getSortTooltip('email')}>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleSort('email')}
+                        sx={{ 
+                          p: isMobile ? 0.25 : 0.5,
+                          '&:hover': { bgcolor: 'rgba(145,158,171,0.08)' }
+                        }}
+                      >
+                        {getSortIcon('email')}
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </TableCell>
                 <TableCell sx={{ 
                   py: isMobile ? 1.5 : 2, 
                   px: isMobile ? 1.5 : 3, 
-                  borderBottom: '1px solid rgba(145,158,171,0.20)'
+                  borderBottom: '1px solid rgba(145,158,171,0.20)',
+                  minWidth: isMobile ? 120 : 150,
+                  width: isMobile ? 'auto' : 'auto'
                 }}>
-                  <Typography variant={isMobile ? "caption" : "body2"} sx={{ 
-                    color: '#637381',
-                    fontSize: isMobile ? '0.75rem' : '0.875rem',
-                    wordBreak: 'break-word'
-                  }}>
-                    {colaborador.departamento}
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.5 : 1 }}>
+                    <Typography variant={isMobile ? "caption" : "body2"} sx={{ 
+                      fontWeight: 600, 
+                      color: '#637381',
+                      fontSize: isMobile ? '0.75rem' : '0.875rem'
+                    }}>
+                      Departamento
+                    </Typography>
+                    <Tooltip title={getSortTooltip('departamento')}>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleSort('departamento')}
+                        sx={{ 
+                          p: isMobile ? 0.25 : 0.5,
+                          '&:hover': { bgcolor: 'rgba(145,158,171,0.08)' }
+                        }}
+                      >
+                        {getSortIcon('departamento')}
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
                 </TableCell>
                 <TableCell sx={{ 
                   py: isMobile ? 1.5 : 2, 
                   px: isMobile ? 1.5 : 3, 
-                  borderBottom: '1px solid rgba(145,158,171,0.20)'
+                  borderBottom: '1px solid rgba(145,158,171,0.20)',
+                  minWidth: isMobile ? 80 : 100,
+                  width: isMobile ? 'auto' : 'auto'
                 }}>
-                  <Box
-                    sx={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      px: isMobile ? 1 : 1.5,
-                      py: isMobile ? 0.25 : 0.5,
-                      borderRadius: 1,
-                      bgcolor: colaborador.ativo ? 'rgba(0, 171, 85, 0.16)' : 'rgba(255, 76, 76, 0.16)',
-                      color: colaborador.ativo ? '#00AB55' : '#FF4C4C',
-                      fontSize: isMobile ? '0.625rem' : '0.75rem',
-                      fontWeight: 600,
-                      minWidth: isMobile ? 60 : 80,
-                      justifyContent: 'center'
-                    }}
-                  >
-                    {colaborador.ativo ? 'Ativo' : 'Inativo'}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 0.5 : 1 }}>
+                    <Typography variant={isMobile ? "caption" : "body2"} sx={{ 
+                      fontWeight: 600, 
+                      color: '#637381',
+                      fontSize: isMobile ? '0.75rem' : '0.875rem'
+                    }}>
+                      Status
+                    </Typography>
+                    <Tooltip title={getSortTooltip('status')}>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleSort('status')}
+                        sx={{ 
+                          p: isMobile ? 0.25 : 0.5,
+                          '&:hover': { bgcolor: 'rgba(145,158,171,0.08)' }
+                        }}
+                      >
+                        {getSortIcon('status')}
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {sortedColaboradores.map((colaborador) => (
+                <TableRow 
+                  key={colaborador.id} 
+                  sx={{ 
+                    '&:hover': { 
+                      bgcolor: 'rgba(145,158,171,0.08)' 
+                    },
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => handleRowClick(colaborador)}
+                >
+                  <TableCell sx={{ 
+                    py: isMobile ? 1.5 : 2, 
+                    px: isMobile ? 1.5 : 3, 
+                    borderBottom: '1px solid rgba(145,158,171,0.20)',
+                    width: isMobile ? 'auto' : 'auto'
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: isMobile ? 1 : 2 }}>
+                      <Avatar 
+                        sx={{ 
+                          width: isMobile ? 28 : 40, 
+                          height: isMobile ? 28 : 40, 
+                          bgcolor: '#00AB55',
+                          fontSize: isMobile ? '0.7rem' : '1rem',
+                          fontWeight: 600,
+                          flexShrink: 0
+                        }}
+                      >
+                        {colaborador.nome.charAt(0).toUpperCase()}
+                      </Avatar>
+                      <Typography variant={isMobile ? "caption" : "body2"} sx={{ 
+                        fontWeight: 600, 
+                        color: '#212B36',
+                        fontSize: isMobile ? '0.7rem' : '0.875rem',
+                        wordBreak: 'break-word',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        maxWidth: isMobile ? 80 : 'none'
+                      }}>
+                        {colaborador.nome}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={{ 
+                    py: isMobile ? 1.5 : 2, 
+                    px: isMobile ? 1.5 : 3, 
+                    borderBottom: '1px solid rgba(145,158,171,0.20)',
+                    width: isMobile ? 'auto' : 'auto'
+                  }}>
+                    <Typography variant={isMobile ? "caption" : "body2"} sx={{ 
+                      color: '#637381',
+                      fontSize: isMobile ? '0.7rem' : '0.875rem',
+                      wordBreak: 'break-all',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      maxWidth: isMobile ? 120 : 'none'
+                    }}>
+                      {colaborador.email}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ 
+                    py: isMobile ? 1.5 : 2, 
+                    px: isMobile ? 1.5 : 3, 
+                    borderBottom: '1px solid rgba(145,158,171,0.20)',
+                    width: isMobile ? 'auto' : 'auto'
+                  }}>
+                    <Typography variant={isMobile ? "caption" : "body2"} sx={{ 
+                      color: '#637381',
+                      fontSize: isMobile ? '0.7rem' : '0.875rem',
+                      wordBreak: 'break-word',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      maxWidth: isMobile ? 100 : 'none'
+                    }}>
+                      {colaborador.departamento}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ 
+                    py: isMobile ? 1.5 : 2, 
+                    px: isMobile ? 1.5 : 3, 
+                    borderBottom: '1px solid rgba(145,158,171,0.20)',
+                    width: isMobile ? 'auto' : 'auto'
+                  }}>
+                    <Box
+                      sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        px: isMobile ? 0.5 : 1.5,
+                        py: isMobile ? 0.25 : 0.5,
+                        borderRadius: 1,
+                        bgcolor: colaborador.ativo ? 'rgba(0, 171, 85, 0.16)' : 'rgba(255, 76, 76, 0.16)',
+                        color: colaborador.ativo ? '#00AB55' : '#FF4C4C',
+                        fontSize: isMobile ? '0.6rem' : '0.75rem',
+                        fontWeight: 600,
+                        minWidth: isMobile ? 50 : 80,
+                        justifyContent: 'center',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {colaborador.ativo ? 'Ativo' : 'Inativo'}
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
       
-      {/* Indicador de scroll horizontal para mobile */}
-      {isMobile && (
-        <Box sx={{ 
-          mt: 2, 
-          textAlign: 'center',
-          px: 2
-        }}>
-          <Typography 
-            variant="caption" 
-            color="text.secondary"
-            sx={{
-              fontSize: '0.75rem',
-              color: '#637381',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 1
-            }}
-          >
-            ← Deslize horizontalmente para ver todas as colunas →
-          </Typography>
-        </Box>
-      )}
-
+     
       {/* Drawer de edição */}
       <Drawer
         anchor="right"
@@ -535,14 +561,18 @@ export default function EmployeeTable() {
         sx={{
           '& .MuiDrawer-paper': {
             width: isMobile ? '100%' : 400,
-            p: 3
+            p: { xs: 2, sm: 3 }
           }
         }}
       >
         <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
           {/* Header do Drawer */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, color: '#212B36' }}>
+            <Typography variant="h6" sx={{ 
+              fontWeight: 600, 
+              color: '#212B36',
+              fontSize: { xs: '1.1rem', sm: '1.25rem' }
+            }}>
               Editar Colaborador
             </Typography>
             <IconButton onClick={handleCloseDrawer} size="small">
